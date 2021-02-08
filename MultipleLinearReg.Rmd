@@ -1,0 +1,25 @@
+---
+title: "MultipleLinearRegression"
+author: "Tadros Salama"
+date: "2/8/2021"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(AmesHousing)
+```
+
+```{r}
+ames <- make_ames()
+options(scipen = 10)
+lm2 <- lm(Sale_Price ~ Gr_Liv_Area + Year_Built, data = ames)
+summary(lm2)
+
+```
+```{r}
+confint(lm2, level = 0.95)
+```
+
