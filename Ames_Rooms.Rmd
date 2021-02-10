@@ -1,0 +1,55 @@
+---
+title: "Simple Linear Regression on the Relationship Between Rooms and Sale Price"
+author: "Tadros Salama"
+date: "2/9/2021"
+output:
+  pdf_document:
+        df_print: kable
+  html_document:
+    css: font.css
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(AmesHousing)
+
+```
+
+### Exercise 1.
+
+**(a)**
+```{r message=FALSE, warning=FALSE}
+options(scipen = 10)
+ames <- make_ames()
+ggplot(ames, aes(x = TotRms_AbvGrd, y = Sale_Price / 1000)) +
+  geom_point(size = 1) +
+  geom_smooth() +
+  labs(x = 'Total Rooms', y = 'Sale Price (in Thousands)')
+```
+
+**(b)**
+```{r paged.print=TRUE}
+lm1 <- lm(Sale_Price ~ TotRms_AbvGrd, data = ames)
+summary(lm1)
+```
+
+**(c)**
+The sale price of a house is expected to rise $25,163 for every room in that house, excluding bathrooms. Roughly 25% of the variance in the sale price can be explained by the total number of rooms in a house.
+
+**(d)**
+```{r}
+confint(lm1, level = 0.95)
+```
+
+**(e)**
+```{r paged.print=TRUE}
+p1 <- data.frame(TotRms_AbvGrd = 8)
+predict(lm1, newdata = p1)
+```
+
+
+
+
+
+
