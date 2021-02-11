@@ -1,0 +1,83 @@
+---
+title: "Cross-Validating in Regression"
+author: "Tadros Salama"
+date: "2/10/2021"
+output: 
+  html_document:
+    css: ['font.css']
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(AmesHousing)
+ames <- make_ames()
+```
+
+In regression, one way to measure error is to take the difference between the actual and predicted value for a given observation (this is the usual definition of a residual in ordinary linear regression). The overall validation error of the model is computed by aggregating the errors across the entire validation data set.
+
+
+One of the most commonly used metric in regression is the **Root Mean Squared Error**. This takes the mean (average) of the squared errors and square roots it so that error is in same units as your response variable.
+
+$$RMSE = \sqrt{\frac{1}{n} \sum^n_{i=1}(y_i - \hat y_i)^2}$$
+
+```{r}
+RMSE <- function(y, y_hat) {
+  sqrt(mean((y-y_hat)^2))
+}
+```
+
+
+In this analysis I will be working with the [**AmesHousing**](https://cran.r-project.org/web/packages/AmesHousing/AmesHousing.pdf), a data set of 1500 residental property sales in Ames, Iowa.
+
+Split `ames` data into a 70% training and 30% test set:
+```{r}
+set.seed(123)
+train_index <- sample(1:nrow(ames), round(nrow(ames) * 0.7))
+ames_train <- ames[train_index, ]
+ames_test <- ames[-train_index, ] 
+```
+
+```{r}
+lm1 <- lm(Sale_Price ~ Gr_Liv_Area, data = ames_train)
+lm2 <- lm(Sale_Price ~ Gr_Liv_Area + Year_Built, data = ames_train)
+```
+
+Make predictions on test set, and compute RMSE
+```{r}
+pred1 <- predict(lm1, newdata = ames_test)
+pred2 <- predict(lm2, newdata = ames_test)
+```
+
+
+```{r}
+RMSE(ames_test$Sale_Price, pred1)
+RMSE(ames_test$Sale_Price, pred2)
+```
+
+```{r}
+pred_df <- data.frame(
+  Actual = ames_test$Sale_Price / 1000, 
+  Pred1 = pred1 / 1000,
+  Pred2 = pred2 / 1000
+) 
+```
+
+
+```{r}
+ggplot(pred_df, aes(x=Actual, y=Pred1)) + 
+  geom_point(size=0.5, alpha = 0.5) +
+  geom_abline(intercept = 0, slope = 1) +
+  xlab("Actual Sale Price (in thousands)") +
+  ylab("Predicted Sale Price (in thousands)") +
+  ggtitle("Model 1") 
+```
+
+```{r}
+ggplot(pred_df, aes(x=Actual, y=Pred2)) + 
+  geom_point(size=0.5, alpha = 0.5) +
+  geom_abline(intercept = 0, slope = 1) +
+  xlab("Actual Salary (in thousands)") +
+  ylab("Predicted Salary (in thousands)") +
+  ggtitle("Model 2")
+```
