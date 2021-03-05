@@ -1,0 +1,61 @@
+---
+title: "Training and Cross Validating a Logistic Regression Model"
+author: "Tadros Salama"
+date: "2/4/2021"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+county_votes <- readRDS(url("https://ericwfox.github.io/data/county_votes16.rds"))
+library(pROC)
+```
+
+## Data containing results for US counties for the 2016 presidential election
+
+`trump_win`: **Response variable** (1 = Trump won, 0 = Trump lost)
+`obama_pctvotes`: **Predictor variable** percent of votes cast for Obama in 2012
+
+**Randomly spliting data into a 70% training and 30% test set**
+```{r}
+set.seed(999)
+n <- nrow(county_votes); n
+round(0.7*n)
+train_index <- sample(1:n, 2178) 
+county_votes_train <- county_votes[train_index, ]
+county_votes_test <- county_votes[-train_index, ]
+```
+
+**Fitting model using training data**
+```{r}
+glm1 <- glm(trump_win ~ obama_pctvotes, family = "binomial", 
+            data=county_votes_train)
+summary(glm1)
+```
+
+**predictions for probabilities on test set**
+```{r}
+probs1 <- predict(glm1, newdata = county_votes_test, type = "response")
+preds1 <- ifelse(probs1 > 0.5, 1, 0)
+head(data.frame(probs1, preds1), n=15)
+
+#confusion matrix
+tb <- table(prediction = preds1,
+            actual = county_votes_test$trump_win)
+addmargins(tb)
+```
+
+```{r}
+roc_obj <- roc(county_votes_test$trump_win, probs1)
+
+plot(1 - roc_obj$specificities, roc_obj$sensitivities, type="l",
+     xlab = "1 - Specificity", ylab = "Sensitivity")
+
+#red point corresponding to 0.5 threshold
+points(x = 24/149, y = 763/785, col="red", pch=19) 
+abline(0, 1, lty=2) # 1-1 line
+
+auc(roc_obj)
+```
+
