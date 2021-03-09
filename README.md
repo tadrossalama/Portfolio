@@ -3,7 +3,4 @@
 ### This repo contains my work in various topics including statistical analysis, supervised learning, and object orriented programming.
 
 ### Outline:
-https://github.com/tadrossalama/Portfolio/blob/main/Cross-validation.Rmd
-
-
-
+Cross-validation.Rmd
