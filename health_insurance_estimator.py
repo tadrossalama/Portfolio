@@ -1,3 +1,6 @@
+
+#This program can be used to estimate the health insurance cost of an individual 
+
 class Patient:
   def __init__(self, name, age, sex, bmi, num_of_children, smoker):
       self.name = name
