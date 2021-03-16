@@ -1,8 +1,11 @@
+'''
+Streamlit web app that visualizes moving averages for any stock ticker symbol
+'''
 import numpy as np
 import pandas as pd
 import hvplot.pandas 
 from pathlib import Path
-import yfinance as yf
+import yfinance as yf  #Pulls historical data from Yahoo Finance
 import streamlit as st 
 
 new_ticker = str(st.text_input("enter ticker"))
