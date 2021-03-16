@@ -1,0 +1,73 @@
+---
+title: "Time Series Decomposition of Austrialian Retail"
+author: "Tadros Salama"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(fpp3)
+library(feasts)
+library(seasonal)
+```
+##Using various time series decomposition models elvaluating the library, `aus_retail` A time series `tsibble` of historical data of the Australian retail industry.
+
+### X11 Decomposition
+```{r}
+set.seed(12345678)
+myseries <- aus_retail %>%
+  filter(`Series ID` == sample(aus_retail$`Series ID`,1))
+autoplot(myseries)
+dcmp <- myseries %>%
+  model(x11 = feasts:::X11(Turnover, turnovertype = 'additive')) %>%
+  components()
+autoplot(dcmp)
+```
+
+```{r}
+autoplot(canadian_gas)
+canadian_gas %>%
+  gg_subseries()
+canadian_gas %>%
+  gg_season()
+```
+
+###`STL` Decomposition
+```{r}
+canadian_gas %>%
+  model(
+    STL(Volume ~ trend(window = 7) +
+              season(window = "periodic"),
+    robust = TRUE)) %>%
+  components() %>%
+  autoplot()
+```
+
+**(c)**
+```{r}
+canadian_gas %>%
+  gg_season()
+```
+
+###`SEATS` Decomposition
+```{r}
+seats_dcmp <- canadian_gas %>%
+  model(seats = feasts:::SEATS(Volume)) %>%
+  components()
+autoplot(seats_dcmp)
+x11_dcmp <- canadian_gas %>%
+  model(x11 = feasts:::X11(Volume, turnovertype = 'additive')) %>%
+  components()
+autoplot(x11_dcmp)
+```
+
+
+
+
+
+
+
+
