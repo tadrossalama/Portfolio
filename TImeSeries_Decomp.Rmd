@@ -13,7 +13,7 @@ library(fpp3)
 library(feasts)
 library(seasonal)
 ```
-##Using various time series decomposition models elvaluating the library, `aus_retail` A time series `tsibble` of historical data of the Australian retail industry.
+### Seasonal Decomposition using the library, `aus_retail` A time series `tsibble` of historical data of the Australian retail industry.
 
 ### X11 Decomposition
 ```{r}
