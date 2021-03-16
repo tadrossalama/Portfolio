@@ -46,11 +46,6 @@ canadian_gas %>%
   autoplot()
 ```
 
-**(c)**
-```{r}
-canadian_gas %>%
-  gg_season()
-```
 
 ###`SEATS` Decomposition
 ```{r}
