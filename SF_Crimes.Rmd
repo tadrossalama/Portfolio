@@ -1,0 +1,64 @@
+---
+title: "San Fransisco Larcency Crimes"
+author: "Tadros Salama"
+date: "12/5/2020"
+output: 
+  html_document:
+    css: ['font.css']
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse) 
+library(lubridate)
+```
+
+```{r include=FALSE}
+sfcrimes <- readRDS(url("https://ericwfox.github.io/data/sfcrimes.rds"))
+sfcrimes_larcency <- sfcrimes %>%
+  filter(type == 'Larceny Theft')
+sfcrimes_larcency
+```
+
+```{r include=FALSE}
+t <- ymd_hms(sfcrimes_larcency$date_time, tz = "America/Los_Angeles")
+```
+
+## Amount of larcency crimes in San Fransisco during the whole year of 2018.
+```{r}
+sfl <- tibble(
+date = date(t),
+month = month(t, label = T), weekday = wday(t, label = T), hour = hour(t)
+)
+sfl
+```
+
+
+```{r}
+ggplot(sfl, aes(hour)) + geom_bar() + theme_classic()
+```
+
+**(d)**
+```{r}
+ggplot(sfl, aes(weekday)) + geom_bar() + theme_bw()
+```
+
+
+```{r}
+sfl_daily <- sfl %>% group_by(date) %>% summarize(count = n())
+ ggplot(sfl_daily, aes(x=date, y=count)) + geom_line(size=0.3) +
+geom_smooth(span = 0.3, se = FALSE) + theme_bw()
+```
+
+
+Bar plot **(c)** of the hourly larceny thefts, shows a concentration of thefts between 5:00pm - 8:00pm. Since that is the typical period people leave work, a majority of these thefts could be targeting commuters. 
+
+
+```{r}
+dec_sfl <- sfl %>% group_by(date, month) %>% summarise(count = n()) %>%
+  filter(month == 'Dec')
+ggplot(dec_sfl, aes(x=date, y=count)) + geom_line(size=0.5) +
+geom_smooth(span = 0.5, se = FALSE) + theme_bw()
+```
+
+
