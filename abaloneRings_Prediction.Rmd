@@ -1,0 +1,159 @@
+---
+title: "Abalone Rings Perdiction"
+date: "`r Sys.Date()`"
+author: Tadros Salama
+output:
+  rmdformats::downcute:
+    code_folding: show
+    self_contained: true
+    thumbnails: false
+    lightbox: false
+    gallery: false
+    highlight: tango
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(rpart)
+library(randomForest)
+library(vip)
+library(reshape)
+library(gridExtra)
+library(AppliedPredictiveModeling)
+data(abalone)
+library(knitr)
+```
+
+### How well can we predict the number of rings on a abalone shell?
+
+**Data**
+```{r}
+library(AppliedPredictiveModeling)
+data(abalone)
+```
+
+
+## Summary STATS
+```{r echo=FALSE}
+kable(summary(abalone))
+p <- ggplot(abalone)
+a <- p + geom_point(aes(LongestShell, Rings, color=Type))
+b <- p + geom_point(aes(Diameter, Rings, color=Type))
+c <- p + geom_point(aes(WholeWeight, Rings, color=Type))
+d <-p + geom_point(aes(ShellWeight, Rings, color=Type))
+grid.arrange(a, b, c, d, ncol=2, nrow =2)
+```
+
+* Variables `LongestShell` and `Diameter` appears to have the strongest
+relationship with the number of rings on an abalone shell. The different
+weight measurements also showed a positive relationship with number of rings.
+Gender does not appear to have an effect on the number of rings, but age does.
+
+Spliting data into 70% `train` & 30% `test`
+
+```{r}
+set.seed(123)
+n <- nrow(abalone)
+train_index <- sample(1:n, round(0.7 * n))
+train <- abalone[train_index, ]
+test <- abalone[-train_index, ]
+```
+
+## Multiple Linear Regression
+```{r}
+lm1 <- lm(Rings ~ ., train)
+summary(lm1)
+```
+
+* decent $R^2$ score. variables `longestShell` and gender, `TypeM` not so
+useful.
+
+## Regression Tree
+
+```{r}
+t1 <- rpart(Rings ~ ., data=train, method = 'anova')
+par(cex=0.7, xpd=NA)
+plot(t1, uniform = TRUE)
+text(t1, use.n = T)
+```
+
+## Random Forest
+
+```{r}
+rf1 <- randomForest(Rings ~.,train, importance= TRUE)
+vip(rf1, num_features = 20, geom = "point", include_type = TRUE)
+```
+
+
+## Results
+```{r}
+
+RMSE <- function(y, y_hat) { sqrt(mean((y - y_hat)^2))
+}
+```
+
+```{r}
+pred_lm <- predict(lm1, newdata = test)
+pred_t <- predict(t1, newdata = test)
+pred_rf <- predict(rf1, newdata = test)
+
+lm_score <- RMSE(test$Rings, pred_lm)
+t_score <- RMSE(test$Rings, pred_t)
+rf_score <- RMSE(test$Rings, pred_rf)
+```
+```{r include=FALSE}
+paste('MLR RMSE: ', round(lm_score, 2))
+paste('Regression Tree RMSE: ', round(t_score, 2))
+paste('Random Forests RMSE: ', round(rf_score,2))
+```
+
+ * The Random Forests model, `rf1` had the best predictive performance. When
+applied to the test data, it's predictions were on average 2.1 rings off from
+the correct number of rings on a abalone shell.
+ * The Regression Tree model, `t1` had the worst predictive performance. On
+ average, it's predictions were 2.4 rings off from the correct number of shells.
+
+
+```{r}
+pred_df <- data.frame(
+  Actual = test$Rings,
+  mlm = pred_lm,
+  regtree = pred_t,
+  rf = pred_rf
+)
+
+plot_lm <- ggplot(pred_df, aes(Actual, mlm)) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1) +
+  xlab("Actual Rings") + ylab("Predicted Rings") +
+  ggtitle('Multiple Linear Regression')
+
+plot_rt <- ggplot(pred_df, aes(Actual, regtree)) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1) +
+  ylab("Predicted Rings") +
+  ggtitle('Regression Tree')
+
+plot_rf <- ggplot(pred_df, aes(Actual, rf)) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1) +
+  ylab("Predicted Rings") +
+  ggtitle('Random Forests')
+
+grid.arrange(plot_lm, plot_rt, plot_rf, ncol=3, nrow =1)
+```
+
+* The Regression Tree plot of predicted vs actual values looks different
+from the other two models, the points are distributed horizontally across the
+x-axis. This is because the algorithm segments the data into regions, and for
+every observation in that region, it makes a predictions based on the training
+data that fell in those regions.
+
+
+ 
+
+
+
+
+
