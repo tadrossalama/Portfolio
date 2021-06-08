@@ -9,9 +9,6 @@ import plotly.graph_objects as go
 
 
 
-
-
-
 def get_data(file):
     df = pd.read_csv(file)
     return df
@@ -22,7 +19,6 @@ def show_data(df):
     st.write(df)
     
     
-
     df['Date'] = pd.to_datetime(pd.Series(df['Date']))
     df['Year'], df['Month'] = df['Date'].dt.year, df['Date'].dt.month_name()
     df['Day'] = df['Date'].dt.day
@@ -36,7 +32,7 @@ def show_data(df):
     df['Category'] = category
     
 
-
+   #Tv Shows
     tv_titles= df[df['Category'] == 'TV']
     tv_titles[['Show','Episode']] = tv_titles['Title'].str.split(": ", n=1,expand=True)
 
@@ -44,16 +40,6 @@ def show_data(df):
     top10= tv_titles['Show'].value_counts()[:n].rename_axis('Show').reset_index(name='EpisodeCount')
     
     top10shows = tv_titles[tv_titles['Show'].isin(top10['Show'])]
-
-
-    
-    
-    
-    
-
-    
-
-    
 
 ####Data Vis############
     
@@ -113,8 +99,8 @@ def show_data(df):
     
  
 
-###show charts
-    #st.altair_chart(plot_top10, use_container_width=True)
+###show charts####
+  
     #top10 charts
     #weekly and monthly charts
     left_column, right_column= st.beta_columns(2)
@@ -131,20 +117,7 @@ def show_data(df):
 
     st.subheader('Viewing History Across Time')
     st.plotly_chart(fig, use_container_width=True, config=config)
-    
-    
-    
-    
-
-    
-    
-
-    
-    
-    
-    
-
-
+   
 
 
 def main():
