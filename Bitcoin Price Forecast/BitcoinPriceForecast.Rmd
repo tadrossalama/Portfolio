@@ -1,0 +1,153 @@
+---
+title: 'Bitcoin Price Forecast'
+author: "Tadros Salama"
+date: "4/28/2021"
+output:
+  rmdformats::downcute:
+    code_folding: show
+    self_contained: true
+    thumbnails: false
+    lightbox: false
+    gallery: false
+    highlight: tango
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(fpp3)
+library(faraway)
+library(lubridate)
+library(gridExtra)
+btc <- read_csv("~/Desktop/474 project/btc.csv")
+```
+
+Over the past year the price of bitcoin has risen more than 300%, growth rarely
+seen in traditional financial markets. Bitcoin is notorious for it's 
+unpredictable price movements and volatility. So what could be more fun than
+forecasting the potential price of 1 bitcoin a year out.
+
+There is close to 19 million bitcoin in circulation
+with a cap of 21 million bitcoin that can be minted. It's scarcity, similar to 
+gold, has been one of it's most appealing qualities too investors.
+So in this forecast the price of bitcoin, `PriceUSD` and it's supply, `SplyCur`
+will be the two variables I use.
+
+In this forecast I used historical data from [coinmetrics](https://coinmetrics.io/)
+tracking daily data from June 2010 till April 2021.
+
+
+## EDA
+
+```{r include=FALSE}
+data_btc <- btc %>%
+  select(date, PriceUSD, SplyCur, NVTAdj) %>% filter(date > '2010-07-18')
+data_btc <- as_tsibble(data_btc)
+
+btc_log <- data_btc %>% mutate(logPrice = abs(log(PriceUSD)))
+head(btc_log)
+tail(btc_log)
+```
+
+```{r}
+
+p1 <- ggplot(btc_log,aes(SplyCur, logPrice)) + geom_line() + geom_smooth(method = "lm", formula = y ~ poly(x, 2), se=F) + coord_trans(x = 'log2')
+p2 <- ggplot(btc_log,aes(date, logPrice)) + geom_line() + geom_smooth(method = "lm", formula = y ~ poly(x, 2), se=F) + coord_trans(x = 'log2')
+p3 <- ggplot(btc_log,aes(date, SplyCur/1000000)) + geom_line() + ylab('Supply in Circulation')
+grid.arrange(p1, p2, p3, ncol=1, nrow =3)
+```
+### Transformatitons
+
+```{r}
+#box_cox transofrmation
+lambda <- data_btc %>% 
+  select(PriceUSD) %>% 
+  features(PriceUSD, features = guerrero) %>%
+  pull(lambda_guerrero)
+lambda
+
+data_btc %>%  
+  select(PriceUSD) %>%
+  autoplot(box_cox(PriceUSD, lambda))
+
+#Log transformation
+data_btc %>%
+  autoplot(log(PriceUSD))
+
+```
+
+
+## Linear regression model
+
+```{r}
+#Overfitting for fun
+lm_fit_btcLog <- btc_log %>%
+  model(
+    lm1 =TSLM(logPrice ~ trend() + season('4years'))
+   
+    )
+lm1 <- btc_log %>%
+  model(TSLM(logPrice ~ SplyCur))
+
+
+augment(lm_fit_btcLog) %>% 
+  ggplot(aes(x=date)) + geom_line(aes(y=logPrice, colour = 'data')) +
+  geom_line(aes(y=.fitted, colour='fitted'))
+
+lm_fit_btcLog %>%
+  forecast(h=365) %>% autoplot(btc_log)
+
+```
+
+
+## ARIMA
+
+```{r}
+fit_arima <- btc_log %>%
+  model(ARIMA(logPrice))
+accuracy(fit_arima)
+fit_arima %>% forecast(h='12 months') %>% autoplot(btc_log)
+
+fit_arima %>% gg_tsresiduals()
+glance(fit_arima)
+
+```
+
+
+## ETS
+
+```{r}
+fit_ets <- btc_log %>%
+  model(
+    ses = ETS(logPrice ~ error("A") + trend("N") + season("N")),
+    holt = ETS(logPrice ~ error("A") + trend("A") + season("N")),
+    damped = ETS(logPrice ~ error("A") + trend("Ad") + season("N")),
+    ets1 = ETS(logPrice)
+  ) 
+
+fit_ets <- btc_log %>%
+  model(ETS(logPrice))
+
+fit_ets %>%
+  forecast(h = '12 months') %>%
+  autoplot(btc_log)
+fit_ets %>%
+  gg_tsresiduals()
+```
+
+
+## Nueral Net
+
+```{r}
+
+nns <- btc_log %>%
+  model(NNETAR(logPrice))
+nns %>% forecast(h='12 months') %>%
+  autoplot(btc_log)
+```
+
+
+
+
+
+
