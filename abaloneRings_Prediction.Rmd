@@ -1,5 +1,5 @@
 ---
-title: "Abalone Rings Perdiction"
+title: "Abalone Rings Prediction"
 date: "`r Sys.Date()`"
 author: Tadros Salama
 output:
