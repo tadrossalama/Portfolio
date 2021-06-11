@@ -4,7 +4,7 @@ I'm Tadros from Redwood City, CA! I'm a undergraduate student studying data scie
 
 ### `Table of Contents`
 
-### [`Netflix Watch Activity Dashboard`](netflixAnalysis.py)
+### [Netflix Watch Activity Dashboard](netflixAnalysis.py)
   A web app that visualizes a users netflix watch history. [See it here](https://share.streamlit.io/tadrossalama/netflixdashboard/main/NetflixDashboard.py)
 
 ### [Bitcoin Price Forecast](BitcoinPriceForecast.Rmd)
