@@ -6,7 +6,7 @@ I'm Tadros from Redwood City, CA! I'm a undergraduate student studying data scie
 ## [Netflix Watch Activity Dashboard](netflixAnalysis.py)
   A web app that visualizes a users netflix watch history. [See it here](https://share.streamlit.io/tadrossalama/netflixdashboard/main/NetflixDashboard.py)
 
-## [Bitcoin Price Forecast](BitcoinPriceForecast.Rmd)
+## [Bitcoin Price Forecast](Bitcoin Price Forecast/BitcoinPriceForecast.Rmd)
   Time Series analysis and forecast on the price of bitcoin using 10 years of daily price data.
   Various models used to forecast the price a year from April 2021. [See forecasts](https://rpubs.com/Tadros/778820)
 
