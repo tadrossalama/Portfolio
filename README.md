@@ -2,7 +2,6 @@
 
 I'm Tadros from Redwood City, CA! I'm a undergraduate student studying data science and statistics. This portfolio contains my work in statistical analysis and time series & forecasting. Visit [my website](https://tdros.io/) too learn more about me and my work!
 
-## Table of Contents
 
 ## [Netflix Watch Activity Dashboard](netflixAnalysis.py)
   A web app that visualizes a users netflix watch history. [See it here](https://share.streamlit.io/tadrossalama/netflixdashboard/main/NetflixDashboard.py)
