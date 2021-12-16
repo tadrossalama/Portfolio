@@ -1,0 +1,108 @@
+---
+title: "Comparing COVID-19 Numbers of US and India"
+
+output:
+  rmdformats::downcute:
+    code_folding: show
+    self_contained: yes
+    thumbnails: no
+    lightbox: no
+    gallery: no
+    highlight: tango
+  pdf_document: default
+---
+
+### Packages Used:
+
+```{r message=FALSE, warning=FALSE}
+library(coronavirus) #Data Source
+library(dplyr)
+library(scales)
+library(hrbrthemes)
+library(gganimate)
+```
+
+Variables:
+
+:   `cases`: Number of cases on given date.
+
+    `date`: date in YYYY-MM-DD format.
+
+```{r}
+# filter by US confirmed cases from the data set
+us_cases <- coronavirus %>%
+  filter(type == "confirmed", country == "US")
+total_us_cases <- sum(us_cases$cases)
+paste('Total US Cases:', prettyNum(total_us_cases,big.mark=","), 'as of ',max(us_cases$date))
+```
+
+
+```{r}
+india_cases <- coronavirus %>%
+  filter(type == "confirmed", country == "India")
+total_india_cases<- sum(india_cases$cases)
+
+paste('Total India Cases:', prettyNum(total_india_cases,big.mark=","), 'as of ', max(india_cases$date))
+```
+
+```{r}
+combined_series <- rbind(india_cases, us_cases)
+```
+
+```{r}
+
+p <- ggplot(data = combined_series, aes(x = date, y = cases, color = country)) +
+  geom_line(size = 0.5) +
+  labs(title = "COVID-19 Cases in the US and India",
+       x = "Date",
+       subtitle = "Jan 2020 - October 2021",
+       caption = "source: John Hopkins University",
+       y = "Number of Cases",
+       color = "Country") +
+  scale_x_date(date_breaks = '2 month', 
+               labels = date_format("%b-%y")) +
+  scale_y_continuous(limits = c(0, 400000), 
+                     breaks = seq(0, 400000, 50000)) +
+  theme_ipsum() +
+  theme(axis.text.x=element_text(angle=60, hjust=1)) 
+p
+```
+
+## Animated time series plot
+
+```{r message=FALSE, warning=FALSE}
+p + transition_reveal(date) + facet_wrap(~country)
+```
+
+
+
+### Cumulative COVID Deaths in US
+
+```{r}
+
+us_deaths <- coronavirus %>%
+  filter(type == "death", country == "US")
+
+us_deaths <- us_deaths %>% mutate(totalDeaths = cumsum(cases))
+us_deaths <- us_deaths %>% filter(totalDeaths > 2)
+ggplot(data = us_deaths, aes(x = date, y = totalDeaths, color = country)) +
+  geom_point(show.legend = FALSE, alpha = 0.7)+
+  scale_color_viridis_d() +
+  labs(title = "COVID-19 Cases in the US and India",
+       x = "Date",
+       subtitle = "Jan 2020 - October 2021",
+       y = "Number of Deaths",
+       color = "Country") +
+  scale_x_date(date_breaks = '2 month', 
+               labels = date_format("%b-%y")) +
+  theme_ipsum() +
+  theme(axis.text.x=element_text(angle=60, hjust=1))+
+  transition_time(date) +
+  enter_fade() +
+  labs(title = "Date: {frame_time}") +
+  shadow_mark(color='black') + view_follow()
+```
+
+
+
+
